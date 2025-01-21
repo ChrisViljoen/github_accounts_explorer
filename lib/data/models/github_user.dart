@@ -34,4 +34,4 @@ class GitHubUser {
       following: json['following'] as int?,
     );
   }
-} 
+}

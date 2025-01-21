@@ -16,4 +16,4 @@ class SearchUsers extends UserSearchEvent {
   List<Object> get props => [query];
 }
 
-class ClearSearch extends UserSearchEvent {} 
+class ClearSearch extends UserSearchEvent {}
