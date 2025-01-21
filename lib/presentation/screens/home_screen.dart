@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/user_search/user_search_bloc.dart';
-import '../blocs/user_search/user_search_event.dart';
-import '../blocs/user_search/user_search_state.dart';
+import 'package:github_accounts_explorer/core/di/service_locator.dart';
+import 'package:github_accounts_explorer/presentation/blocs/user_details/user_details_event.dart';
+import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_bloc.dart';
+import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_event.dart';
+import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_state.dart';
+
+import 'user_details_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -10,7 +14,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => UserSearchBloc(),
+      create: (context) => ServiceLocator.instance.createUserSearchBloc(),
       child: const HomeScreenContent(),
     );
   }
@@ -91,7 +95,17 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                         title: Text(user.login),
                         subtitle: Text(user.type),
                         onTap: () {
-                          // TODO: Navigate to user details
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BlocProvider(
+                                create: (context) => ServiceLocator.instance
+                                    .createUserDetailsBloc()
+                                  ..add(LoadUserDetails(user.login)),
+                                child: UserDetailsScreen(user: user),
+                              ),
+                            ),
+                          );
                         },
                       );
                     },
@@ -107,4 +121,4 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       ),
     );
   }
-} 
+}

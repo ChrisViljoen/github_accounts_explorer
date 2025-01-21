@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/github_user.dart';
+import 'package:github_accounts_explorer/data/models/github_user.dart';
 
 abstract class UserSearchState extends Equatable {
   const UserSearchState();
@@ -28,4 +28,4 @@ class UserSearchError extends UserSearchState {
 
   @override
   List<Object?> get props => [message];
-} 
+}

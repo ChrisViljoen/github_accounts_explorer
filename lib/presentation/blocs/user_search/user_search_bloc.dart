@@ -1,13 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../data/datasources/github_api_client.dart';
+import 'package:github_accounts_explorer/data/datasources/github_api_client.dart';
+
 import 'user_search_event.dart';
 import 'user_search_state.dart';
 
 class UserSearchBloc extends Bloc<UserSearchEvent, UserSearchState> {
   final GitHubApiClient _apiClient;
 
-  UserSearchBloc({GitHubApiClient? apiClient})
-      : _apiClient = apiClient ?? GitHubApiClient(),
+  UserSearchBloc({required GitHubApiClient apiClient})
+      : _apiClient = apiClient,
         super(UserSearchInitial()) {
     on<SearchUsers>(_onSearchUsers);
     on<ClearSearch>(_onClearSearch);
@@ -35,4 +36,4 @@ class UserSearchBloc extends Bloc<UserSearchEvent, UserSearchState> {
   void _onClearSearch(ClearSearch event, Emitter<UserSearchState> emit) {
     emit(UserSearchInitial());
   }
-} 
+}

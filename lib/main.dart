@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+
+import 'core/di/service_locator.dart';
 import 'presentation/screens/home_screen.dart';
 
 void main() {
+  ServiceLocator.instance;
   runApp(const GitHubExplorerApp());
 }
 
