@@ -3,6 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:github_accounts_explorer/data/models/github_user.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_details/user_details_bloc.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_details/user_details_state.dart';
+import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_bloc.dart';
+import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_event.dart';
+import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_state.dart';
+import 'package:github_accounts_explorer/core/di/service_locator.dart';
 
 class UserDetailsScreen extends StatelessWidget {
   final GitHubUser user;
@@ -14,35 +18,47 @@ class UserDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(user.login),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border),
-            onPressed: () {
-              // TODO: Implement like functionality
-            },
-          ),
-        ],
-      ),
-      body: BlocBuilder<UserDetailsBloc, UserDetailsState>(
-        builder: (context, state) {
-          if (state is UserDetailsLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is UserDetailsError) {
-            return Center(
-              child: Text(
-                state.message,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            );
-          } else if (state is UserDetailsLoaded) {
-            return _buildUserDetails(context, state.user);
-          }
-          return _buildUserDetails(context, user);
-        },
+    return BlocProvider(
+      create: (context) => ServiceLocator.instance.createLikedUsersBloc()..add(LoadLikedUsers()),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(user.login),
+          centerTitle: true,
+          actions: [
+            BlocBuilder<LikedUsersBloc, LikedUsersState>(
+              builder: (context, state) {
+                final bool isLiked = state is LikedUsersLoaded && 
+                                   state.likedUserIds.contains(user.id);
+                return IconButton(
+                  icon: Icon(
+                    isLiked ? Icons.favorite : Icons.favorite_border,
+                    color: isLiked ? Colors.red : null,
+                  ),
+                  onPressed: () {
+                    context.read<LikedUsersBloc>().add(ToggleLikeUser(user));
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+        body: BlocBuilder<UserDetailsBloc, UserDetailsState>(
+          builder: (context, state) {
+            if (state is UserDetailsLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is UserDetailsError) {
+              return Center(
+                child: Text(
+                  state.message,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              );
+            } else if (state is UserDetailsLoaded) {
+              return _buildUserDetails(context, state.user);
+            }
+            return _buildUserDetails(context, user);
+          },
+        ),
       ),
     );
   }

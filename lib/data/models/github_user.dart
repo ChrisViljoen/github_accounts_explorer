@@ -34,4 +34,29 @@ class GitHubUser {
       following: json['following'] as int?,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'login': login,
+      'id': id,
+      'avatar_url': avatarUrl,
+      'type': type,
+      'name': name,
+      'bio': bio,
+      'public_repos': publicRepos,
+      'followers': followers,
+      'following': following,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GitHubUser &&
+          runtimeType == other.runtimeType &&
+          login == other.login &&
+          id == other.id;
+
+  @override
+  int get hashCode => login.hashCode ^ id.hashCode;
 }
