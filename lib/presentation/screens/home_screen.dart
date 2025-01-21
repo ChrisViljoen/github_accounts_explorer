@@ -5,6 +5,10 @@ import 'package:github_accounts_explorer/presentation/blocs/user_details/user_de
 import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_bloc.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_event.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_state.dart';
+import 'package:github_accounts_explorer/presentation/screens/liked_users_screen.dart';
+import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_bloc.dart';
+import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_event.dart';
+import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_state.dart';
 
 import 'user_details_screen.dart';
 
@@ -13,8 +17,15 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ServiceLocator.instance.createUserSearchBloc(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => ServiceLocator.instance.createUserSearchBloc(),
+        ),
+        BlocProvider(
+          create: (context) => ServiceLocator.instance.createLikedUsersBloc()..add(LoadLikedUsers()),
+        ),
+      ],
       child: const HomeScreenContent(),
     );
   }
@@ -42,6 +53,19 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       appBar: AppBar(
         title: const Text('GitHub Accounts Explorer'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LikedUsersScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -94,6 +118,21 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                         ),
                         title: Text(user.login),
                         subtitle: Text(user.type),
+                        trailing: BlocBuilder<LikedUsersBloc, LikedUsersState>(
+                          builder: (context, likedState) {
+                            final bool isLiked = likedState is LikedUsersLoaded && 
+                                               likedState.likedUserIds.contains(user.id);
+                            return IconButton(
+                              icon: Icon(
+                                isLiked ? Icons.favorite : Icons.favorite_border,
+                                color: isLiked ? Colors.red : null,
+                              ),
+                              onPressed: () {
+                                context.read<LikedUsersBloc>().add(ToggleLikeUser(user));
+                              },
+                            );
+                          },
+                        ),
                         onTap: () {
                           Navigator.push(
                             context,
