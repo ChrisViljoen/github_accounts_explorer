@@ -46,7 +46,7 @@ Note: Integration tests require a device or emulator to be connected.
 - Flutter SDK (3.0.0 or higher)
 - Dart SDK (3.0.0 or higher)
 - Android Studio / VS Code with Flutter extensions
-- (Optional) A GitHub account for creating an access token - without a token, the app will work with a lower API rate limit (10 requests/hour vs 30 requests/hour with token)
+- (Optional) A GitHub account for creating an access token - without a token, the app will work with a lower API rate limit (10 requests/minute vs 30 requests/minute with token)
 
 ### Installation
 
@@ -67,7 +67,7 @@ flutter pub get
 ```bash
 flutter run
 ```
-Note: Without a token, you'll be limited to 10 requests per hour for the Search API.
+Note: Without a token, you'll be limited to 10 requests per minute for the Search API.
 
 #### With GitHub Token (Recommended)
 1. Create a GitHub token:
@@ -77,7 +77,7 @@ Note: Without a token, you'll be limited to 10 requests per hour for the Search 
 2. Run the app with your token:
 ```bash
 flutter run --dart-define=GITHUB_TOKEN=your_token_here
-```Note: With a token, you'll have a higher rate limit of 30 requests per hour for the Search API.
+```Note: With a token, you'll have a higher rate limit of 30 requests per minute for the Search API.
 
 ### Building Release APK
 
