@@ -1,15 +1,13 @@
 # GitHub Accounts Explorer
 
-A Flutter application that allows you to search and explore GitHub user profiles and their repositories. Built with Flutter and the GitHub REST API, featuring a clean Material Design 3 interface.
-
-![App Icon](assets/app_icon.png)
+A Flutter application that allows you to search and explore GitHub user profiles and their repositories. Built with Flutter and the GitHub REST API.
 
 ## Features
 
 - Search GitHub users with real-time results
 - View detailed user profiles including:
   - Profile information
-  - Bio and location
+  - Bio
   - Statistics (followers, following, repositories)
   - List of public repositories
 - Like/bookmark favorite users for quick access
@@ -54,7 +52,7 @@ Note: Integration tests require a device or emulator to be connected.
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/github_accounts_explorer.git
+git clone https://github.com/ChrisViljoen/github_accounts_explorer.git
 cd github_accounts_explorer
 ```
 
