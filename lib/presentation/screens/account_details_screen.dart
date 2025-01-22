@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:github_accounts_explorer/core/di/service_locator.dart';
+import 'package:github_accounts_explorer/data/models/github_repo.dart';
 import 'package:github_accounts_explorer/data/models/github_user.dart';
 import 'package:github_accounts_explorer/presentation/blocs/account_details/account_details_bloc.dart';
 import 'package:github_accounts_explorer/presentation/blocs/account_details/account_details_state.dart';
 import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_bloc.dart';
 import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_event.dart';
 import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_state.dart';
-import 'package:github_accounts_explorer/core/di/service_locator.dart';
+import 'package:github_accounts_explorer/presentation/blocs/repository/repository_bloc.dart';
+import 'package:github_accounts_explorer/presentation/blocs/repository/repository_event.dart';
+import 'package:github_accounts_explorer/presentation/blocs/repository/repository_state.dart';
+import 'package:intl/intl.dart';
 
 class AccountDetailsScreen extends StatelessWidget {
   final GitHubUser user;
@@ -18,8 +23,17 @@ class AccountDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ServiceLocator.instance.createLikedUsersBloc()..add(LoadLikedUsers()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => ServiceLocator.instance.createLikedUsersBloc()
+            ..add(LoadLikedUsers()),
+        ),
+        BlocProvider(
+          create: (context) => ServiceLocator.instance.createRepositoryBloc()
+            ..add(LoadRepositories(user.login)),
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(
           title: Text(user.login),
@@ -27,8 +41,8 @@ class AccountDetailsScreen extends StatelessWidget {
           actions: [
             BlocBuilder<LikedUsersBloc, LikedUsersState>(
               builder: (context, state) {
-                final bool isLiked = state is LikedUsersLoaded && 
-                                   state.likedUserIds.contains(user.id);
+                final bool isLiked = state is LikedUsersLoaded &&
+                    state.likedUserIds.contains(user.id);
                 return IconButton(
                   icon: Icon(
                     isLiked ? Icons.favorite : Icons.favorite_border,
@@ -68,7 +82,6 @@ class AccountDetailsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile Header
           Container(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -97,8 +110,6 @@ class AccountDetailsScreen extends StatelessWidget {
               ],
             ),
           ),
-
-          // Bio Section
           if (user.bio != null) ...[
             const Divider(),
             Padding(
@@ -109,8 +120,6 @@ class AccountDetailsScreen extends StatelessWidget {
               ),
             ),
           ],
-
-          // Stats Section
           const Divider(),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -136,8 +145,6 @@ class AccountDetailsScreen extends StatelessWidget {
             ),
           ),
           const Divider(),
-
-          // Repositories Section
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
@@ -145,7 +152,51 @@ class AccountDetailsScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
-          // TODO: Add repositories list
+          BlocBuilder<RepositoryBloc, RepositoryState>(
+            builder: (context, state) {
+              if (state is RepositoryLoading) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              } else if (state is RepositoryError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      state.message,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
+                );
+              } else if (state is RepositoryLoaded) {
+                if (state.repositories.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text('No repositories found'),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.repositories.length,
+                  itemBuilder: (context, index) {
+                    return _buildRepositoryCard(
+                      context,
+                      state.repositories[index],
+                    );
+                  },
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         ],
       ),
     );
@@ -163,6 +214,96 @@ class AccountDetailsScreen extends StatelessWidget {
           label,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
+      ],
+    );
+  }
+
+  Widget _buildRepositoryCard(BuildContext context, GitHubRepo repo) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    repo.name,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                BlocBuilder<RepositoryBloc, RepositoryState>(
+                  builder: (context, state) {
+                    final bool isCopied = state is RepositoryLoaded &&
+                        state.copiedUrl == repo.htmlUrl;
+                    return IconButton(
+                      icon: Icon(
+                        isCopied ? Icons.check : Icons.copy,
+                        color: isCopied ? Colors.green : null,
+                      ),
+                      onPressed: () {
+                        context.read<RepositoryBloc>().add(
+                              CopyRepositoryUrl(repo.htmlUrl),
+                            );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Repository URL copied to clipboard'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      tooltip: 'Copy repository URL',
+                    );
+                  },
+                ),
+              ],
+            ),
+            if (repo.description != null) ...[
+              const SizedBox(height: 8),
+              Text(repo.description!),
+            ],
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (repo.language != null)
+                  Chip(
+                    label: Text(repo.language!),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                  ),
+                Text(
+                  'Created ${DateFormat.yMMMd().format(repo.createdAt)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildRepoStat(Icons.star_border, repo.stargazersCount),
+                _buildRepoStat(Icons.fork_right, repo.forksCount),
+                _buildRepoStat(Icons.visibility_outlined, repo.watchersCount),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRepoStat(IconData icon, int count) {
+    return Row(
+      children: [
+        Icon(icon, size: 16),
+        const SizedBox(width: 4),
+        Text(count.toString()),
       ],
     );
   }

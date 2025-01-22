@@ -47,3 +47,6 @@ app.*.map.json
 **/GeneratedPluginRegistrant.*
 **/generated_plugin_registrant.*
 **/generated_plugins.cmake
+
+# Generated mock files
+*.mocks.dart

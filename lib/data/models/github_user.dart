@@ -6,8 +6,10 @@ class GitHubUser {
   final String? name;
   final String? bio;
   final int? publicRepos;
+  final int? publicGists;
   final int? followers;
   final int? following;
+  final DateTime? createdAt;
 
   GitHubUser({
     required this.login,
@@ -17,8 +19,10 @@ class GitHubUser {
     this.name,
     this.bio,
     this.publicRepos,
+    this.publicGists,
     this.followers,
     this.following,
+    this.createdAt,
   });
 
   factory GitHubUser.fromJson(Map<String, dynamic> json) {
@@ -30,8 +34,12 @@ class GitHubUser {
       name: json['name'] as String?,
       bio: json['bio'] as String?,
       publicRepos: json['public_repos'] as int?,
+      publicGists: json['public_gists'] as int?,
       followers: json['followers'] as int?,
       following: json['following'] as int?,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : null,
     );
   }
 
@@ -44,8 +52,10 @@ class GitHubUser {
       'name': name,
       'bio': bio,
       'public_repos': publicRepos,
+      'public_gists': publicGists,
       'followers': followers,
       'following': following,
+      'created_at': createdAt?.toIso8601String(),
     };
   }
 

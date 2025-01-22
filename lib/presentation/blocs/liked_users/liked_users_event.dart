@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../../data/models/github_user.dart';
 
 abstract class LikedUsersEvent extends Equatable {
@@ -19,4 +20,4 @@ class ToggleLikeUser extends LikedUsersEvent {
   List<Object> get props => [user];
 }
 
-class ClearLikedUsers extends LikedUsersEvent {} 
+class ClearLikedUsers extends LikedUsersEvent {}

@@ -1,15 +1,19 @@
-import 'package:github_accounts_explorer/core/config/env_config.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AppConfig {
+  static FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   static String? _cachedToken;
 
+  static void setSecureStorage(FlutterSecureStorage storage) {
+    _secureStorage = storage;
+  }
+
   static Future<Map<String, String>> getGitHubHeaders() async {
-    final headers = {
+    final token = await _getToken();
+    final headers = <String, String>{
       'Accept': 'application/vnd.github.v3+json',
-      'X-GitHub-Api-Version': '2022-11-28',
     };
 
-    final token = await _getToken();
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
     }
@@ -20,7 +24,7 @@ class AppConfig {
   static Future<String?> _getToken() async {
     if (_cachedToken != null) return _cachedToken;
 
-    _cachedToken = await EnvConfig.instance.getGitHubToken();
+    _cachedToken = await _secureStorage.read(key: 'github_token');
     return _cachedToken;
   }
 

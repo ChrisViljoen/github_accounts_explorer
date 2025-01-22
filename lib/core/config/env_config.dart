@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class EnvConfig {
@@ -24,17 +25,25 @@ class EnvConfig {
     );
 
     if (defaultToken.isNotEmpty) {
-      print('Found token in environment, updating stored token...');
+      if (kDebugMode) {
+        print('Found token in environment, updating stored token...');
+      }
       await setGitHubToken(defaultToken);
-      print(
-          'Token from environment starts with: ${defaultToken.substring(0, math.min(10, defaultToken.length))}...');
+      if (kDebugMode) {
+        print(
+            'Token from environment starts with: ${defaultToken.substring(0, math.min(10, defaultToken.length))}...');
+      }
     } else {
       final token = await getGitHubToken();
       if (token?.isNotEmpty == true) {
-        print(
-            'Using existing token that starts with: ${token!.substring(0, math.min(10, token.length))}...');
+        if (kDebugMode) {
+          print(
+              'Using existing token that starts with: ${token!.substring(0, math.min(10, token.length))}...');
+        }
       } else {
-        print('No token available - will use unauthenticated access');
+        if (kDebugMode) {
+          print('No token available - will use unauthenticated access');
+        }
       }
     }
   }

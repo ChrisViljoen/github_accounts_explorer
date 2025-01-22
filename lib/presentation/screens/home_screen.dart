@@ -95,7 +95,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
             ),
           ),
         );
-        // Refresh liked users state when returning from details screen
         if (context.mounted) {
           context.read<LikedUsersBloc>().add(LoadLikedUsers());
         }
@@ -188,7 +187,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         builder: (context, likedState) {
           return CustomScrollView(
             slivers: [
-              // Favorite Accounts Section
               const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -238,11 +236,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                   child: Divider(height: 32),
                 ),
               ],
-
-              // Search Section with Recent Searches
               _buildSearchSection(),
-
-              // Search Results Section
               BlocBuilder<UserSearchBloc, UserSearchState>(
                 builder: (context, searchState) {
                   if (searchState is UserSearchLoading) {

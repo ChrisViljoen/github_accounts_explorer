@@ -4,7 +4,8 @@ import 'package:github_accounts_explorer/data/datasources/github_api_client.dart
 import 'account_details_event.dart';
 import 'account_details_state.dart';
 
-class AccountDetailsBloc extends Bloc<AccountDetailsEvent, AccountDetailsState> {
+class AccountDetailsBloc
+    extends Bloc<AccountDetailsEvent, AccountDetailsState> {
   final GitHubApiClient _apiClient;
 
   AccountDetailsBloc({required GitHubApiClient apiClient})

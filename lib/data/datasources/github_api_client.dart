@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:github_accounts_explorer/core/config/app_config.dart';
 import 'package:github_accounts_explorer/core/constants/config.dart';
+import 'package:github_accounts_explorer/data/models/github_repo.dart';
 import 'package:github_accounts_explorer/data/models/github_user.dart';
 import 'package:http/http.dart' as http;
 
@@ -16,12 +18,15 @@ class CacheEntry<T> {
 }
 
 class GitHubApiClient {
-  final http.Client _httpClient;
+  final http.Client httpClient;
+  final FlutterSecureStorage secureStorage;
   final Map<String, CacheEntry<List<GitHubUser>>> _searchCache = {};
-  static const Duration _cacheDuration = Duration(minutes: 5);
+  final Map<String, CacheEntry<List<GitHubRepo>>> _reposCache = {};
 
-  GitHubApiClient({http.Client? httpClient})
-      : _httpClient = httpClient ?? http.Client();
+  GitHubApiClient({
+    required this.httpClient,
+    FlutterSecureStorage? secureStorage,
+  }) : secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   String _formatWaitTime(DateTime resetTime) {
     final waitTime = resetTime.difference(DateTime.now());
@@ -72,7 +77,7 @@ class GitHubApiClient {
 
     try {
       final headers = await AppConfig.getGitHubHeaders();
-      final response = await _httpClient.get(url, headers: headers);
+      final response = await httpClient.get(url, headers: headers);
 
       _checkRateLimit(response);
 
@@ -83,7 +88,7 @@ class GitHubApiClient {
 
         _searchCache[query] = CacheEntry(
           users,
-          DateTime.now().add(_cacheDuration),
+          DateTime.now().add(Config.cacheDuration),
         );
 
         return users;
@@ -116,7 +121,7 @@ class GitHubApiClient {
 
     try {
       final headers = await AppConfig.getGitHubHeaders();
-      final response = await _httpClient.get(url, headers: headers);
+      final response = await httpClient.get(url, headers: headers);
 
       _checkRateLimit(response);
 
@@ -144,6 +149,59 @@ class GitHubApiClient {
     } catch (e) {
       throw Exception(
           'Failed to load profile: ${e.toString().replaceAll('Exception: ', '')}');
+    }
+  }
+
+  Future<List<GitHubRepo>> getAccountRepos(String username) async {
+    if (_reposCache.containsKey(username)) {
+      final cacheEntry = _reposCache[username]!;
+      if (!cacheEntry.isExpired) {
+        return cacheEntry.data;
+      } else {
+        _reposCache.remove(username);
+      }
+    }
+
+    final url =
+        Uri.parse('${Config.baseUrl}${Config.userDetails}/$username/repos');
+
+    try {
+      final headers = await AppConfig.getGitHubHeaders();
+      final response = await httpClient.get(url, headers: headers);
+
+      _checkRateLimit(response);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        final repos = data.map((repo) => GitHubRepo.fromJson(repo)).toList();
+
+        _reposCache[username] = CacheEntry(
+          repos,
+          DateTime.now().add(Config.cacheDuration),
+        );
+
+        return repos;
+      } else if (response.statusCode == 401) {
+        throw Exception('Authentication Error: Please check your GitHub token');
+      } else if (response.statusCode == 403) {
+        final resetTime = response.headers['x-ratelimit-reset'];
+        if (resetTime != null) {
+          final reset = DateTime.fromMillisecondsSinceEpoch(
+            int.parse(resetTime) * 1000,
+          );
+          final waitTime = _formatWaitTime(reset);
+          throw Exception(
+            'API Rate Limit Reached\nPlease wait $waitTime before trying again',
+          );
+        }
+        throw Exception('API Rate Limit Reached\nPlease try again later');
+      } else {
+        throw Exception(
+            'Failed to get repositories (Error ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception(
+          'Failed to load repositories: ${e.toString().replaceAll('Exception: ', '')}');
     }
   }
 }
