@@ -1,20 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:github_accounts_explorer/core/config/app_config.dart';
 
 class EnvConfig {
-  static const String _tokenKey = 'GITHUB_API_TOKEN';
   static final EnvConfig instance = EnvConfig._();
-
-  final _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
-    iOptions: IOSOptions(
-      accessibility: KeychainAccessibility.first_unlock,
-    ),
-  );
 
   EnvConfig._();
 
@@ -28,13 +18,14 @@ class EnvConfig {
       if (kDebugMode) {
         print('Found token in environment, updating stored token...');
       }
-      await setGitHubToken(defaultToken);
+      await AppConfig.setToken(defaultToken);
       if (kDebugMode) {
         print(
             'Token from environment starts with: ${defaultToken.substring(0, math.min(10, defaultToken.length))}...');
       }
     } else {
-      final token = await getGitHubToken();
+      final headers = await AppConfig.getGitHubHeaders();
+      final token = headers['Authorization']?.replaceAll('Bearer ', '');
       if (token?.isNotEmpty == true) {
         if (kDebugMode) {
           print(
@@ -46,17 +37,5 @@ class EnvConfig {
         }
       }
     }
-  }
-
-  Future<void> setGitHubToken(String token) async {
-    await _storage.write(key: _tokenKey, value: token);
-  }
-
-  Future<String?> getGitHubToken() async {
-    return await _storage.read(key: _tokenKey);
-  }
-
-  Future<void> clearGitHubToken() async {
-    await _storage.delete(key: _tokenKey);
   }
 }

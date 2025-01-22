@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AppConfig {
+  static const String _tokenKey = 'GITHUB_API_TOKEN';
   static FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   static String? _cachedToken;
 
@@ -24,8 +25,13 @@ class AppConfig {
   static Future<String?> _getToken() async {
     if (_cachedToken != null) return _cachedToken;
 
-    _cachedToken = await _secureStorage.read(key: 'github_token');
+    _cachedToken = await _secureStorage.read(key: _tokenKey);
     return _cachedToken;
+  }
+
+  static Future<void> setToken(String token) async {
+    await _secureStorage.write(key: _tokenKey, value: token);
+    _cachedToken = token;
   }
 
   static void clearCache() {

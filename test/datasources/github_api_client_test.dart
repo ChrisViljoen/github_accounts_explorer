@@ -21,7 +21,7 @@ void main() {
       mockHttpClient = MockClient();
       mockSecureStorage = MockFlutterSecureStorage();
       // Set up the mock to return a test token
-      when(mockSecureStorage.read(key: 'github_token'))
+      when(mockSecureStorage.read(key: 'GITHUB_API_TOKEN'))
           .thenAnswer((_) => Future.value('test_token'));
       // Configure AppConfig to use the mock storage
       AppConfig.setSecureStorage(mockSecureStorage);
