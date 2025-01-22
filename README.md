@@ -77,7 +77,9 @@ Note: Without a token, you'll be limited to 10 requests per minute for the Searc
 2. Run the app with your token:
 ```bash
 flutter run --dart-define=GITHUB_TOKEN=your_token_here
-```Note: With a token, you'll have a higher rate limit of 30 requests per minute for the Search API.
+```
+
+Note: With a token, you'll have a higher rate limit of 30 requests per minute for the Search API.
 
 ### Building Release APK
 
