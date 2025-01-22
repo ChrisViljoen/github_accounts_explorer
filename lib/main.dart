@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-
-import 'presentation/screens/home_screen.dart';
+import 'package:github_accounts_explorer/core/config/env_config.dart';
+import 'package:github_accounts_explorer/presentation/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await EnvConfig.instance.init();
+
   runApp(const GitHubExplorerApp());
 }
 

@@ -1,7 +1,7 @@
 import 'package:github_accounts_explorer/data/datasources/github_api_client.dart';
 import 'package:github_accounts_explorer/data/datasources/local_storage_service.dart';
+import 'package:github_accounts_explorer/presentation/blocs/account_details/account_details_bloc.dart';
 import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_bloc.dart';
-import 'package:github_accounts_explorer/presentation/blocs/user_details/user_details_bloc.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_bloc.dart';
 import 'package:http/http.dart' as http;
 
@@ -21,8 +21,8 @@ class ServiceLocator {
   // BLoCs
   UserSearchBloc createUserSearchBloc() =>
       UserSearchBloc(apiClient: _apiClient);
-  UserDetailsBloc createUserDetailsBloc() =>
-      UserDetailsBloc(apiClient: _apiClient);
+  AccountDetailsBloc createAccountDetailsBloc() =>
+      AccountDetailsBloc(apiClient: _apiClient);
   LikedUsersBloc createLikedUsersBloc() =>
       LikedUsersBloc(storageService: storageService);
 

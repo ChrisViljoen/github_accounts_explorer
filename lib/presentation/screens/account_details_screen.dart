@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:github_accounts_explorer/data/models/github_user.dart';
-import 'package:github_accounts_explorer/presentation/blocs/user_details/user_details_bloc.dart';
-import 'package:github_accounts_explorer/presentation/blocs/user_details/user_details_state.dart';
+import 'package:github_accounts_explorer/presentation/blocs/account_details/account_details_bloc.dart';
+import 'package:github_accounts_explorer/presentation/blocs/account_details/account_details_state.dart';
 import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_bloc.dart';
 import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_event.dart';
 import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_state.dart';
 import 'package:github_accounts_explorer/core/di/service_locator.dart';
 
-class UserDetailsScreen extends StatelessWidget {
+class AccountDetailsScreen extends StatelessWidget {
   final GitHubUser user;
 
-  const UserDetailsScreen({
+  const AccountDetailsScreen({
     super.key,
     required this.user,
   });
@@ -42,28 +42,28 @@ class UserDetailsScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: BlocBuilder<UserDetailsBloc, UserDetailsState>(
+        body: BlocBuilder<AccountDetailsBloc, AccountDetailsState>(
           builder: (context, state) {
-            if (state is UserDetailsLoading) {
+            if (state is AccountDetailsLoading) {
               return const Center(child: CircularProgressIndicator());
-            } else if (state is UserDetailsError) {
+            } else if (state is AccountDetailsError) {
               return Center(
                 child: Text(
                   state.message,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               );
-            } else if (state is UserDetailsLoaded) {
-              return _buildUserDetails(context, state.user);
+            } else if (state is AccountDetailsLoaded) {
+              return _buildAccountDetails(context, state.user);
             }
-            return _buildUserDetails(context, user);
+            return _buildAccountDetails(context, user);
           },
         ),
       ),
     );
   }
 
-  Widget _buildUserDetails(BuildContext context, GitHubUser user) {
+  Widget _buildAccountDetails(BuildContext context, GitHubUser user) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

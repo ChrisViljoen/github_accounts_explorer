@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:github_accounts_explorer/core/di/service_locator.dart';
+import 'package:github_accounts_explorer/presentation/blocs/account_details/account_details_event.dart';
 import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_bloc.dart';
 import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_event.dart';
 import 'package:github_accounts_explorer/presentation/blocs/liked_users/liked_users_state.dart';
-import 'package:github_accounts_explorer/presentation/blocs/user_details/user_details_event.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_bloc.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_event.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_state.dart';
 
-import 'user_details_screen.dart';
+import 'account_details_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -89,9 +89,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           MaterialPageRoute(
             builder: (context) => BlocProvider(
               create: (context) =>
-                  ServiceLocator.instance.createUserDetailsBloc()
-                    ..add(LoadUserDetails(user.login)),
-              child: UserDetailsScreen(user: user),
+                  ServiceLocator.instance.createAccountDetailsBloc()
+                    ..add(LoadAccountDetails(user.login)),
+              child: AccountDetailsScreen(user: user),
             ),
           ),
         );
