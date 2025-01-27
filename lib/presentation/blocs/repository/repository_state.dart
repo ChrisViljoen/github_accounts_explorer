@@ -15,21 +15,32 @@ class RepositoryLoading extends RepositoryState {}
 class RepositoryLoaded extends RepositoryState {
   final List<GitHubRepo> repositories;
   final String? copiedUrl;
+  final bool hasMore;
+  final bool isLoadingMore;
 
-  const RepositoryLoaded(this.repositories, {this.copiedUrl});
+  const RepositoryLoaded(
+    this.repositories, {
+    this.copiedUrl,
+    this.hasMore = false,
+    this.isLoadingMore = false,
+  });
 
   RepositoryLoaded copyWith({
     List<GitHubRepo>? repositories,
     String? copiedUrl,
+    bool? hasMore,
+    bool? isLoadingMore,
   }) {
     return RepositoryLoaded(
       repositories ?? this.repositories,
-      copiedUrl: copiedUrl,
+      copiedUrl: copiedUrl ?? this.copiedUrl,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
     );
   }
 
   @override
-  List<Object?> get props => [repositories, copiedUrl];
+  List<Object?> get props => [repositories, copiedUrl, hasMore, isLoadingMore];
 }
 
 class RepositoryError extends RepositoryState {

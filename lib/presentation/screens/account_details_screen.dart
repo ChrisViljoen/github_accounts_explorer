@@ -78,91 +78,99 @@ class AccountDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildAccountDetails(BuildContext context, GitHubUser user) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundImage: NetworkImage(user.avatarUrl),
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundImage: NetworkImage(user.avatarUrl),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.name ?? user.login,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            user.type,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user.name ?? user.login,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user.type,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
+              ),
+              if (user.bio != null) ...[
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    user.bio!,
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
                 ),
               ],
-            ),
-          ),
-          if (user.bio != null) ...[
-            const Divider(),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                user.bio!,
-                style: Theme.of(context).textTheme.bodyLarge,
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStatItem(
+                      context,
+                      'Repositories',
+                      user.publicRepos?.toString() ?? '0',
+                    ),
+                    _buildStatItem(
+                      context,
+                      'Followers',
+                      user.followers?.toString() ?? '0',
+                    ),
+                    _buildStatItem(
+                      context,
+                      'Following',
+                      user.following?.toString() ?? '0',
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatItem(
-                  context,
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
                   'Repositories',
-                  user.publicRepos?.toString() ?? '0',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                _buildStatItem(
-                  context,
-                  'Followers',
-                  user.followers?.toString() ?? '0',
-                ),
-                _buildStatItem(
-                  context,
-                  'Following',
-                  user.following?.toString() ?? '0',
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Repositories',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ),
-          BlocBuilder<RepositoryBloc, RepositoryState>(
-            builder: (context, state) {
-              if (state is RepositoryLoading) {
-                return const Center(
+        ),
+        BlocBuilder<RepositoryBloc, RepositoryState>(
+          builder: (context, state) {
+            if (state is RepositoryLoading) {
+              return const SliverToBoxAdapter(
+                child: Center(
                   child: Padding(
                     padding: EdgeInsets.all(16.0),
                     child: CircularProgressIndicator(),
                   ),
-                );
-              } else if (state is RepositoryError) {
-                return Center(
+                ),
+              );
+            } else if (state is RepositoryError) {
+              return SliverToBoxAdapter(
+                child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
@@ -172,33 +180,55 @@ class AccountDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                );
-              } else if (state is RepositoryLoaded) {
-                if (state.repositories.isEmpty) {
-                  return const Center(
+                ),
+              );
+            } else if (state is RepositoryLoaded) {
+              if (state.repositories.isEmpty) {
+                return const SliverToBoxAdapter(
+                  child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Text('No repositories found'),
                     ),
-                  );
-                }
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: state.repositories.length,
-                  itemBuilder: (context, index) {
+                  ),
+                );
+              }
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index >= state.repositories.length - 3 &&
+                        !state.isLoadingMore &&
+                        state.hasMore) {
+                      Future.microtask(() {
+                        context
+                            .read<RepositoryBloc>()
+                            .add(LoadMoreRepositories());
+                      });
+                    }
+
+                    if (index == state.repositories.length) {
+                      if (!state.hasMore) return null;
+
+                      return const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
                     return _buildRepositoryCard(
                       context,
                       state.repositories[index],
                     );
                   },
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-        ],
-      ),
+                  childCount:
+                      state.repositories.length + (state.hasMore ? 1 : 0),
+                ),
+              );
+            }
+            return const SliverToBoxAdapter(child: SizedBox.shrink());
+          },
+        ),
+      ],
     );
   }
 

@@ -17,6 +17,13 @@ class CacheEntry<T> {
   bool get isExpired => DateTime.now().isAfter(expiryTime);
 }
 
+class RepositoryResponse {
+  final List<GitHubRepo> repositories;
+  final bool hasMore;
+
+  RepositoryResponse(this.repositories, this.hasMore);
+}
+
 class GitHubApiClient {
   final http.Client httpClient;
   final FlutterSecureStorage secureStorage;
@@ -152,18 +159,33 @@ class GitHubApiClient {
     }
   }
 
-  Future<List<GitHubRepo>> getAccountRepos(String username) async {
-    if (_reposCache.containsKey(username)) {
-      final cacheEntry = _reposCache[username]!;
+  bool _hasNextPage(http.Response response) {
+    final linkHeader = response.headers['link'];
+    if (linkHeader == null) return false;
+
+    return linkHeader.contains('rel="next"');
+  }
+
+  Future<RepositoryResponse> getAccountRepos(String username,
+      {int page = 1, int perPage = 30}) async {
+    final cacheKey = '$username-$page';
+
+    if (_reposCache.containsKey(cacheKey)) {
+      final cacheEntry = _reposCache[cacheKey]!;
       if (!cacheEntry.isExpired) {
-        return cacheEntry.data;
+        final hasMore = await _hasNextPage(await httpClient.get(
+          Uri.parse(
+              '${Config.baseUrl}${Config.userDetails}/$username/repos?page=${page + 1}&per_page=$perPage'),
+          headers: await AppConfig.getGitHubHeaders(),
+        ));
+        return RepositoryResponse(cacheEntry.data, hasMore);
       } else {
-        _reposCache.remove(username);
+        _reposCache.remove(cacheKey);
       }
     }
 
-    final url =
-        Uri.parse('${Config.baseUrl}${Config.userDetails}/$username/repos');
+    final url = Uri.parse(
+        '${Config.baseUrl}${Config.userDetails}/$username/repos?page=$page&per_page=$perPage');
 
     try {
       final headers = await AppConfig.getGitHubHeaders();
@@ -174,13 +196,14 @@ class GitHubApiClient {
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final repos = data.map((repo) => GitHubRepo.fromJson(repo)).toList();
+        final hasMore = _hasNextPage(response);
 
-        _reposCache[username] = CacheEntry(
+        _reposCache[cacheKey] = CacheEntry(
           repos,
           DateTime.now().add(Config.cacheDuration),
         );
 
-        return repos;
+        return RepositoryResponse(repos, hasMore);
       } else if (response.statusCode == 401) {
         throw Exception('Authentication Error: Please check your GitHub token');
       } else if (response.statusCode == 403) {

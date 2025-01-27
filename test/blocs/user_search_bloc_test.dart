@@ -1,10 +1,11 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'package:mockito/mockito.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:github_accounts_explorer/data/models/github_user.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_bloc.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_event.dart';
 import 'package:github_accounts_explorer/presentation/blocs/user_search/user_search_state.dart';
+import 'package:mockito/mockito.dart';
+
 import '../mocks/mock_github_api_client.mocks.dart';
 
 void main() {
@@ -81,4 +82,4 @@ void main() {
       expect: () => [isA<UserSearchInitial>()],
     );
   });
-} 
+}

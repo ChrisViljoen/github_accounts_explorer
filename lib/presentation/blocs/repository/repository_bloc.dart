@@ -7,11 +7,16 @@ import 'repository_state.dart';
 
 class RepositoryBloc extends Bloc<RepositoryEvent, RepositoryState> {
   final GitHubApiClient _apiClient;
+  int _currentPage = 1;
+  static const _perPage = 30;
+  bool _hasMoreData = true;
+  String? _currentUsername;
 
   RepositoryBloc({required GitHubApiClient apiClient})
       : _apiClient = apiClient,
         super(RepositoryInitial()) {
     on<LoadRepositories>(_onLoadRepositories);
+    on<LoadMoreRepositories>(_onLoadMoreRepositories);
     on<CopyRepositoryUrl>(_onCopyRepositoryUrl);
   }
 
@@ -22,8 +27,56 @@ class RepositoryBloc extends Bloc<RepositoryEvent, RepositoryState> {
     emit(RepositoryLoading());
 
     try {
-      final repositories = await _apiClient.getAccountRepos(event.username);
-      emit(RepositoryLoaded(repositories));
+      _currentPage = 1;
+      _currentUsername = event.username;
+
+      final response = await _apiClient.getAccountRepos(
+        event.username,
+        page: _currentPage,
+        perPage: _perPage,
+      );
+
+      _hasMoreData = response.hasMore;
+      emit(RepositoryLoaded(response.repositories, hasMore: _hasMoreData));
+    } catch (e) {
+      emit(RepositoryError(e.toString()));
+    }
+  }
+
+  Future<void> _onLoadMoreRepositories(
+    LoadMoreRepositories event,
+    Emitter<RepositoryState> emit,
+  ) async {
+    if (state is! RepositoryLoaded) {
+      return;
+    }
+
+    if (!_hasMoreData || _currentUsername == null) {
+      return;
+    }
+
+    try {
+      final currentState = state as RepositoryLoaded;
+      emit(RepositoryLoaded(
+        currentState.repositories,
+        hasMore: _hasMoreData,
+        isLoadingMore: true,
+      ));
+
+      _currentPage++;
+      final response = await _apiClient.getAccountRepos(
+        _currentUsername!,
+        page: _currentPage,
+        perPage: _perPage,
+      );
+
+      _hasMoreData = response.hasMore;
+
+      emit(RepositoryLoaded(
+        [...currentState.repositories, ...response.repositories],
+        hasMore: _hasMoreData,
+        isLoadingMore: false,
+      ));
     } catch (e) {
       emit(RepositoryError(e.toString()));
     }

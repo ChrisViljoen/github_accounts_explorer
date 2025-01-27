@@ -21,7 +21,7 @@ void main() {
 
       // Wait for search results
       await tester.pump(const Duration(seconds: 2));
-      
+
       // Verify search results appear
       expect(find.byType(ListTile), findsWidgets);
 
@@ -57,4 +57,4 @@ void main() {
       expect(find.byIcon(Icons.favorite), findsWidgets);
     });
   });
-} 
+}

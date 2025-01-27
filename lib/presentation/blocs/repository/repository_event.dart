@@ -16,6 +16,8 @@ class LoadRepositories extends RepositoryEvent {
   List<Object> get props => [username];
 }
 
+class LoadMoreRepositories extends RepositoryEvent {}
+
 class CopyRepositoryUrl extends RepositoryEvent {
   final String url;
 

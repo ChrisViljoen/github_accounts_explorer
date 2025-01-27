@@ -1,4 +1,6 @@
-class GitHubRepo {
+import 'package:equatable/equatable.dart';
+
+class GitHubRepo extends Equatable {
   final String name;
   final DateTime createdAt;
   final int stargazersCount;
@@ -8,7 +10,7 @@ class GitHubRepo {
   final String? language;
   final String htmlUrl;
 
-  GitHubRepo({
+  const GitHubRepo({
     required this.name,
     required this.createdAt,
     required this.stargazersCount,
@@ -44,4 +46,16 @@ class GitHubRepo {
       'html_url': htmlUrl,
     };
   }
+
+  @override
+  List<Object?> get props => [
+        name,
+        createdAt,
+        stargazersCount,
+        forksCount,
+        watchersCount,
+        description,
+        language,
+        htmlUrl,
+      ];
 }
