@@ -2,6 +2,15 @@
 
 A Flutter application that allows you to search and explore GitHub user profiles and their repositories. Built with Flutter and the GitHub REST API.
 
+## App Demo
+
+The demo below shows:
+- Searching for and favoriting the Facebook organization
+- Searching for and favoriting the GitHub organization
+- Navigating to Facebook's profile, scrolling through lazy-loaded repositories, and copying a repository URL
+
+![App Demo - Search, Favorites and Repository Actions](assets/demo/github_accounts_explorer_demo.gif)
+
 ## Features
 
 - Search GitHub users with real-time results
