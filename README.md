@@ -43,8 +43,8 @@ Note: Integration tests require a device or emulator to be connected.
 
 ### Prerequisites
 
-- Flutter SDK (3.0.0 or higher)
-- Dart SDK (3.0.0 or higher)
+- Flutter SDK (3.5.0 or higher)
+- Dart SDK (3.5.4 or higher)
 - Android Studio / VS Code with Flutter extensions
 - (Optional) A GitHub account for creating an access token - without a token, the app will work with a lower API rate limit (10 requests/minute vs 30 requests/minute with token)
 
